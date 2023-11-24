@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites disabled="0" errors="0" failures="0" tests="14" time="0.209">
+ <testsuite name="POST /login" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.135" errors="0" tests="2" skipped="0" disabled="0" failures="0">
+  <testcase classname="POST /login" name="Loign testUser ;should return 200 and a token when login successfully" time="0.127" />
+  <testcase classname="POST /login" name="should return 400 when username or password is invalid" time="0.006" />
+ </testsuite>
+ <testsuite name="POST /register" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.012" errors="0" tests="1" skipped="0" disabled="0" failures="0">
+  <testcase classname="POST /register" name="&quot;testUser&quot;&lt;lD&gt; with password &quot;123&quot;, ID should be a unique idLog in as " time="0.011" />
+ </testsuite>
+ <testsuite name="PUT /logout" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.009" errors="0" tests="2" skipped="0" disabled="0" failures="0">
+  <testcase classname="PUT /logout" name="Log out &quot;testUser&quot;-lD&gt; ID should be the unigue registered id" time="0.005" />
+  <testcase classname="PUT /logout" name="should return unauthorized error when no token provided" time="0.004" />
+ </testsuite>
+ <testsuite name="GET /headline:username" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.008" errors="0" tests="2" skipped="0" disabled="0" failures="0">
+  <testcase classname="GET /headline:username" name="should return the headline for a valid username" time="0.004" />
+  <testcase classname="GET /headline:username" name="should return an error for a non-existent username" time="0.004" />
+ </testsuite>
+ <testsuite name="PUT /headline" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.022" errors="0" tests="2" skipped="0" disabled="0" failures="0">
+  <testcase classname="PUT /headline" name="Update the status headline and verify the change" time="0.018" />
+  <testcase classname="PUT /headline" name="should return an error when the user does not exist" time="0.004" />
+ </testsuite>
+ <testsuite name="POST /articles" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.011" errors="0" tests="2" skipped="0" disabled="0" failures="0">
+  <testcase classname="POST /articles" name="Create a new article and verify that the article was added" time="0.006" />
+  <testcase classname="POST /articles" name="should return an error when the user does not exist" time="0.003" />
+ </testsuite>
+ <testsuite name="PUT /articles/:id" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.003" errors="0" tests="1" skipped="0" disabled="0" failures="0">
+  <testcase classname="PUT /articles/:id" name="should update an existing article" time="0.003" />
+ </testsuite>
+ <testsuite name="GET /articles" timestamp="2023-11-15T07:55:41" hostname="localhost" time="0.009" errors="0" tests="2" skipped="0" disabled="0" failures="0">
+  <testcase classname="GET /articles" name="should return all articles" time="0.004" />
+  <testcase classname="GET /articles" name="should return articles for a specific user" time="0.005" />
+ </testsuite>
+</testsuites>
