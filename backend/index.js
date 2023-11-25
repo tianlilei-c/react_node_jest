@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors'); // 
 require('dotenv').config();
 const verifyToken = require('./middlewares/auth');
 const mockMiddles = require('./middlewares/mockMiddles');
@@ -14,14 +15,14 @@ const testprotectedRoute = require('./routes/test/protected')
 const stubsApi = require('./routes/stubsApi/stubsapi')
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
+app.use(cors()); 
 //test middlewares verifyToken
 app.use('/protected', verifyToken, testprotectedRoute);
 app.use('/login', loginRoute);
 app.use('/register', registerRoute);
-app.use('/logout', mockMiddles, logoutRoute);
-app.use('/headline', mockMiddles, headlineRoute);
-app.use('/articles', mockMiddles, articlesRoute);
+app.use('/logout', verifyToken, logoutRoute);
+app.use('/headline', verifyToken, headlineRoute);
+app.use('/articles', verifyToken, articlesRoute);
 app.use('/', mockMiddles, stubsApi)
 
   // const password = encodeURIComponent('886xK31111MongoDb');

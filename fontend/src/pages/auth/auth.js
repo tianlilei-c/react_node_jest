@@ -4,25 +4,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useHistory } from 'react-router-dom';
-
+import { LoginApi } from '../../api';
 const Login = () => {
     const dispatch = useDispatch();
     const history = useHistory();
     const [isFormSwitched, setIsFormSwitched] = useState(false);
-
     const userdata = useSelector(state => state.userdata);
     const cacheduserData = useMemo(() => userdata, [userdata]);
-    const updateuserData = (newData) => {
-        dispatch({ type: 'UPDATE_USERDATA', payload: newData });
-    };
-
-    const updatejsonData = (newData) => {
-        dispatch({ type: 'UPDATE_JSONDATA', payload: newData });
-    };
-
-    const updatelogindata = (newData) => {
-        dispatch({ type: 'LOGIN_DATA', payload: newData });
-    };
 
     const [formData, setFormData] = useState({
         bday: "",
@@ -71,7 +59,17 @@ const Login = () => {
             }).catch(error => console.error(error))
     }, []);
 
+    const updateuserData = (newData) => {
+        dispatch({ type: 'UPDATE_USERDATA', payload: newData });
+    };
 
+    const updatejsonData = (newData) => {
+        dispatch({ type: 'UPDATE_JSONDATA', payload: newData });
+    };
+
+    const updatelogindata = (newData) => {
+        dispatch({ type: 'LOGIN_DATA', payload: newData });
+    };
 
     const handleloginInputChange = (e) => {
         setloginFormData({
@@ -149,23 +147,17 @@ const Login = () => {
         setIsFormSwitched(!isFormSwitched);
     };
 
-    const loginbtnsubmit = (e) => {
+    const loginbtnsubmit = async (e) => {
         e.preventDefault();
-        const matchedUser = cacheduserData.filter(user => {
-            return (
-                user.username === loginformData.loginaccountname &&
-                user.address.street === loginformData.loginpwd
-            );
-        });
-        if (matchedUser.length === 1) {
-            updatelogindata(matchedUser[0]);
-            const userString = JSON.stringify(matchedUser[0]);
-            localStorage.setItem('user', userString);
-            toast.success("login success");
-            history.push("/");
-        } else {
-            toast.error("password Error or Incorrect password ");
+        let obj = {
+            username:loginformData.loginaccountname,
+            password : loginformData.loginpwd
         }
+        await LoginApi(obj).then((res)=>{
+            console.log('登陆的返回值',res);
+        }).catch((err)=>{
+            console.log('登录发生报错',err);
+        })
     };
 
     const cleanformdata = () => {
