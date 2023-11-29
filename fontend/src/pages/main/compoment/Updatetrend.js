@@ -6,27 +6,8 @@ const updatestate = ({ handleuptrend }) => {
     title: '',
     image: null,
     body: '',
-    time: null,
     isTextOnly: true,
-    name: null
   });
-  useEffect(() => {
-    const userString = localStorage.getItem('user');
-    const user = userString ? JSON.parse(userString) : null;
-    if (user && user.name) {
-      setPost(prevPost => ({
-        ...prevPost,
-        name: user.name,
-        userId: user.id ? user.id : null
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (post.time !== null) {
-      handleuptrend(post)
-    }
-  }, [post.time]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -41,7 +22,7 @@ const updatestate = ({ handleuptrend }) => {
     setPost(prevPost => ({
       ...prevPost,
       image: URL.createObjectURL(file),
-      isTextOnly: false 
+      isTextOnly: false
     }));
   };
 
@@ -51,26 +32,14 @@ const updatestate = ({ handleuptrend }) => {
       title: '',
       image: null,
       body: '',
-      time: null,
       isTextOnly: true
     }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const timestamp = Date.now();
-        const date = new Date(timestamp);
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const seconds = date.getSeconds();
     if (post.title !== '' && post.body !== '') {
-      setPost(prevPost => ({
-        ...prevPost,
-        time: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-      }));
+      handleuptrend(post)
     }
   };
 

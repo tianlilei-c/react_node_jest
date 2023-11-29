@@ -1,75 +1,42 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import stylel from './auth.module.css';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { LoginApi } from '../../api';
+import { SIGNUP } from '../../api';
 const Login = () => {
-    const dispatch = useDispatch();
+    let dispatch = useDispatch()
     const history = useHistory();
+    const location = useLocation()
     const [isFormSwitched, setIsFormSwitched] = useState(false);
-    const userdata = useSelector(state => state.userdata);
-    const cacheduserData = useMemo(() => userdata, [userdata]);
 
     const [formData, setFormData] = useState({
-        bday: "",
-        pwd: "",
-        pwdcon: "",
-        id: null,
-        name: "",
-        username: "",
-        email: "",
+        username: '',
+        email: '',
+        password: '',
+        name: '',
+        headline: '',
         zipcode: '',
-        address: {
-            street: "",
-            suite: "",
-            city: "",
-            zipcode: "",
-        },
-        phone: "",
-        website: "",
-        company: {
-            name: "",
-            catchPhrase: "I'm happy!",
-            bs: ""
-        }
+        phone: '',
+        dob: '',
+        avatar: '',
+        pwd: ''
     });
-
     const [loginformData, setloginFormData] = useState({
         loginaccountname: "",
         loginpwd: "",
     });
 
     useEffect(() => {
-        updatelogindata(null)
-        localStorage.removeItem('user');
+        localStorage.removeItem('authToken')
+        localStorage.removeItem('UserName')
+        dispatch({ type: 'TOKEN_STATE', payload: true });
+        if (location.state && location.state.message) {
+            toast.error(location.state.message, { autoClose: 1500 });
+        }
     }, [])
-
-    useEffect(() => {
-        fetch('https://jsonplaceholder.typicode.com/posts')
-            .then(response => response.json())
-            .then(data => {
-                updatejsonData(data);
-            }).catch(error => console.error(error))
-        fetch('https://jsonplaceholder.typicode.com/users')
-            .then(response => response.json())
-            .then(data => {
-                updateuserData(data);
-            }).catch(error => console.error(error))
-    }, []);
-
-    const updateuserData = (newData) => {
-        dispatch({ type: 'UPDATE_USERDATA', payload: newData });
-    };
-
-    const updatejsonData = (newData) => {
-        dispatch({ type: 'UPDATE_JSONDATA', payload: newData });
-    };
-
-    const updatelogindata = (newData) => {
-        dispatch({ type: 'LOGIN_DATA', payload: newData });
-    };
 
     const handleloginInputChange = (e) => {
         setloginFormData({
@@ -86,13 +53,8 @@ const Login = () => {
     };
 
     const bdaycheck = () => {
-        const hasSameName = cacheduserData.some(obj => obj.username === formData.username);
-        if (hasSameName) {
-            toast.error('same name with userjson');
-            return
-        }
-        if (formData.bday !== "") {
-            var bdayinput = formData.bday.toString();
+        if (formData.dob !== "") {
+            var bdayinput = formData.dob.toString();
             var datenow = new Date();
             var age = datenow.getFullYear() - bdayinput.substr(0, 4);
             var month = datenow.getMonth() - bdayinput.substr(4, 2);
@@ -110,8 +72,7 @@ const Login = () => {
     };
 
     const pwdcheck = () => {
-        if (formData.pwd === formData.pwdcon) {
-            toast.success("two password is same");
+        if (formData.pwd === formData.password) {
             return true;
         } else {
             toast.error("The password confirmation must be the same as the password")
@@ -129,63 +90,80 @@ const Login = () => {
         }
     };
 
-    const btnsubmit = (e) => {
+    function convertToDate(input) {
+        if (typeof input === "string" && input.length === 8) {
+            const year = input.substr(0, 4);
+            const month = input.substr(4, 2);
+            const day = input.substr(6, 2);
+            return `${year}-${month}-${day}`;
+        } else {
+            return "error input";
+        }
+    }
+
+    const SIGNUP_btnsubmit = async (e) => {
         e.preventDefault();
         let state = namecheck() && bdaycheck() && pwdcheck()
         if (state) {
-            
-            updatelogindata(formData);
-            const userString = JSON.stringify(formData);
-            localStorage.setItem('user', userString);
-            toast.success("success Sign up");
-            history.push("/");
+            formData.dob = convertToDate(formData.dob)
+            await SIGNUP(formData).then(async (res) => {
+                toast.success('SignUp Success!', { autoClose: 1000 })
+                setloginFormData({
+                    loginaccountname: formData.username,
+                    loginpwd: formData.password,
+                })
+                await loginbtnsubmit()
+            }).catch((error) => {
+                if (error.status === 484) {
+                    toast.error(error.message, { autoClose: 1500 })
+                } else {
+                    console.error(error.message);
+                }
+            });
+
         }
         return state
     };
 
-    const handleFormSwitch = () => {
-        setIsFormSwitched(!isFormSwitched);
+    const cleanformdata = () => {
+        setFormData({
+            username: null,
+            email: null,
+            password: null,
+            name: null,
+            headline: null,
+            zipcode: null,
+            phone: null,
+            dob: null,
+            avatar: null,
+            pwd: null
+        });
     };
 
     const loginbtnsubmit = async (e) => {
         e.preventDefault();
         let obj = {
-            username:loginformData.loginaccountname,
-            password : loginformData.loginpwd
+            username: loginformData.loginaccountname,
+            password: loginformData.loginpwd
         }
-        await LoginApi(obj).then((res)=>{
-            console.log('登陆的返回值',res);
-        }).catch((err)=>{
-            console.log('登录发生报错',err);
+        await LoginApi(obj).then((res) => {
+            toast.success('Login Success!', { autoClose: 1000 })
+            localStorage.setItem('authToken', res.token)
+            localStorage.setItem('UserName', obj.username)
+            setTimeout(() => {
+                history.push('/')
+            }, 1000);
+        }).catch((err) => {
+            if (err.status === 400) {
+                toast.error('Incorrect username or password', { autoClose: 1000 })
+            } else {
+                toast.error('Login Error' + { autoClose: 1000 })
+            }
         })
     };
 
-    const cleanformdata = () => {
-        setFormData({
-            bday: "",
-            pwd: "",
-            pwdcon: "",
-            id: null,
-            name: "",
-            username: "",
-            email: "",
-            zipcode: '',
-            address: {
-                street: "",
-                suite: "",
-                city: "",
-                zipcode: "",
-            },
-            phone: "",
-            website: "",
-            company: {
-                name: "",
-                catchPhrase: "",
-                bs: ""
-            }
-        });
-
-
+    const handleFormSwitch = () => {
+        setIsFormSwitched(!isFormSwitched);
     };
 
 
@@ -200,7 +178,7 @@ const Login = () => {
                         method=""
                         className={stylel.form}
                         id="a-form"
-                        onSubmit={btnsubmit}
+                        onSubmit={SIGNUP_btnsubmit}
                     >
                         <h2 className={`${stylel.form_title} ${stylel.title}`}>Register</h2>
                         <input
@@ -242,13 +220,13 @@ const Login = () => {
                             onChange={handleInputChange}
                         />
                         <input
-                            id="bday"
-                            name="bday"
+                            id="dob"
+                            name="dob"
                             className={stylel.form_input}
                             pattern="(202[0-2]|20[0-1][0-9]|19[0-9]{2})(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])"
                             placeholder="Birthday:19991231"
                             required
-                            value={formData.bday}
+                            value={formData.dob}
                             onChange={handleInputChange}
                         />
                         <input
@@ -274,11 +252,11 @@ const Login = () => {
                         <input
                             type="password"
                             id="pwdcon"
-                            name="pwdcon"
+                            name="password"
                             className={stylel.form_input}
                             placeholder="Password confirmation"
                             required
-                            value={formData.pwdcon}
+                            value={formData.password}
                             onChange={handleInputChange}
                         />
                         <button className={`${stylel.form_button} ${stylel.button} ${stylel.submit}`} type="submit">
@@ -315,6 +293,7 @@ const Login = () => {
                     </form>
                 </div>
 
+                {/* change form */}
                 <div className={`${stylel.switch} ${isFormSwitched ? stylel['is-txr'] : ''}`} id="switch-cnt">
                     <div className={stylel.switch_circle}></div>
                     <div className={`${stylel.switch_circle} ${stylel['switch_circle-t']}`}></div>

@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Articles = require('../../models/articles');
 const User = require('../../models/user');
+const Followers = require('../../models/followerlist');
 
 router.post('/', async (req, res) => {
   try {
     const { userId, title, body, image } = req.body;
-    const user = await User.findOne({ _id:userId });
+    const user = await User.findOne({ _id: userId });
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
@@ -49,16 +50,17 @@ router.put('/:id', async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    if (req.query.userId) {
-      const article = await Articles.find({userId:req.query.userId});
-      if (!article) {
-        return res.status(404).json({ error: 'Article not found' });
-      }
-      res.status(200).json(article);
-    } else {
-      const articles = await Articles.find();
-      res.status(200).json(articles);
+    let userIds = [];
+    userIds.push(req.user._id);
+    const followers = await Followers.findOne({ username: req.user.username });
+    if (followers && followers.followers.length > 0) {
+      const followerUsers = await User.find({ username: { $in: followers.followers } });
+      userIds = userIds.concat(followerUsers.map(user => user._id));
     }
+
+    const articles = await Articles.find({ userId: { $in: userIds } });
+    res.status(200).json(articles);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while retrieving articles' });

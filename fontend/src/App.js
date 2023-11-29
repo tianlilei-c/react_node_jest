@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
 import Login from './pages/auth/auth';
 import Index from './pages/main/main';
 import Updateuser from './pages/profile/profile';
-
 const App = () => {
   return (
     <Provider store={store}>

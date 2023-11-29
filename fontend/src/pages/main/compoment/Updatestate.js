@@ -42,7 +42,7 @@ const updatestate = ({ handleupstate}) => {
                     value={post.text}
                     onChange={handleInputChange}
                 />
-                <label htmlFor="file" className={styles.inputimglabel}>Upload IMG</label>
+                {/* <label htmlFor="file" className={styles.inputimglabel}>Upload IMG</label> */}
                 <input
                     type="file"
                     name="file"

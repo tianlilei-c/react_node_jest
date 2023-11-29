@@ -11,136 +11,109 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Searchbar from './compoment/SearchBar'
 import { useHistory } from 'react-router-dom';
+import { getUserProfile, updateHeadLine, createArticle, addFollower, getFollowers, getArticleList, removeFollower } from '../../api'
 
 const Indexpage = () => {
     const dispatch = useDispatch();
     const history = useHistory();
     const [SearchEmpty, setchageSearchEmpty] = useState(false);
-    const [resgisteraddfollowed, setresgisteraddfollowed] = useState(false);
     const [FollowedList, setFollowedList] = useState([]);
     const [FollowedTrendsList, setFollowedTrendsList] = useState([]);
 
-    const userdata = useSelector(state => state.userdata);
-    const cacheduserData = useMemo(() => userdata, [userdata]);
-    const updateuserData = (newData) => {
-        dispatch({ type: 'UPDATE_USERDATA', payload: newData });
-    };
+    const tokenState = useSelector(state => state.tokenState);
+    useEffect(() => {
+        console.log(tokenState);
+        if (tokenState === false) {
+            console.log('主页验证', tokenState);
+            history.push('/auth', { message: 'Token expired' });
+        }
+    }, [tokenState, history]);
 
-    const jsondata = useSelector(state => state.jsondata);
-    const cachedjsonData = useMemo(() => jsondata, [jsondata]);
-    const updatejsonData = (newData) => {
-        dispatch({ type: 'UPDATE_JSONDATA', payload: newData });
-    };
-    const logindata = useSelector(state => state.logindata);
-    const cachedlogindata = useMemo(() => logindata, [logindata]);
-    const updatelogindata = (newData) => {
-        dispatch({ type: 'LOGIN_DATA', payload: newData });
-        let userobj = JSON.stringify(newData)
-        localStorage.setItem('user', userobj)
-    };
+    const [userProfile, setuserProfile] = useState({
+        avatar: "",
+        dob: "",
+        email: "",
+        headline: "",
+        name: "",
+        phone: "",
+        user: "",
+        username: "",
+        zipcode: null,
+        _id: ""
+    });
 
     useEffect(() => {
-        const userString = localStorage.getItem('user');
-        const user = JSON.parse(userString);
-        if (user || cachedlogindata) {
-            updatelogindata(user)
-            fetch('https://jsonplaceholder.typicode.com/posts')
-                .then(response => response.json())
-                .then(data => {
-                    updatejsonData(data);
-                })
-            fetch('https://jsonplaceholder.typicode.com/users')
-                .then(response => response.json())
-                .then(data => {
-                    updateuserData(data);
-                })
-        } else {
-            history.push("/auth");
-        }
+        getUserProfile().then((res) => {
+            setuserProfile(res)
+            getFollowList()
+        }).catch((err) => {
+            console.log(err);
+            toast.error('获取信息失败,请点击退出登录' + err, { autoClose: 1000 });
+        })
     }, [])
 
-    useEffect(() => {
-        try {
-            if (cacheduserData && cachedlogindata.id != null) {
-                const matchedUsers = cacheduserData.filter(user => {
-                    return (
-                        user.id === (cachedlogindata.id + 1) % 10 ||
-                        user.id === (cachedlogindata.id + 2) % 10 ||
-                        user.id === (cachedlogindata.id + 3) % 10 ||
-                        (cachedlogindata.id === 9 && user.id === 10) ||
-                        (cachedlogindata.id === 7 && user.id === 10) ||
-                        (cachedlogindata.id === 8 && user.id === 10)
-                    );
-                });
-                setFollowedList(matchedUsers);
-                updateTrends()
-            }
-        } catch (error) {
-        }
-    }, [cachedlogindata, userdata, cacheduserData]);
+    const getFollowList = (() => {
+        getFollowers().then(res => {
+            setFollowedList(res)
+            getArticleList().then(res => {
+                console.log('文章列表', res);
+                setFollowedTrendsList(res)
+            }).catch(err => {
+                console.log('获取文章失败');
+            })
+        })
+    })
 
-    useEffect(() => {
-        updateTrends()
-    }, [SearchEmpty, FollowedList, cachedjsonData]);
-
-    const updateTrends = () => {
-        if (FollowedList && cachedjsonData) {
-            try {
-                let matchedUsers = []
-                const trendsuserarr = [cachedlogindata.id];
-                const updatedTrendsUserArr = [
-                    ...trendsuserarr,
-                    ...FollowedList.map(item => item.id)
-                ];
-                cachedjsonData.forEach(postobj => {
-                    if (updatedTrendsUserArr.includes(postobj.userId)) {
-                        matchedUsers.push(postobj);
-                    }
-                });
-                matchedUsers.reverse();
-                setFollowedTrendsList(matchedUsers);
-            } catch (error) {
-            }
-        }
-    }
-
-    const handleUnfollow = (userId) => {
-        const updatedFollowedList = FollowedList.filter(user => user.id !== userId);
-        setFollowedList(updatedFollowedList);
+    const handleUnfollow = (username) => {
+        removeFollower(username).then(res => {
+            toast.success('unfollow success', { autoClose: 1000 })
+            getFollowList()
+        }).catch(err => {
+            console.log(err);
+        })
     };
 
     const handleUpstate = (stateobj) => {
         try {
-            let obj = JSON.parse(JSON.stringify(cachedlogindata));
-            obj.company.catchPhrase = stateobj.text;
-            updatelogindata(obj);
+            let obj = {
+                headline: stateobj.text,
+                username: localStorage.getItem('UserName')
+            }
+            updateHeadLine(obj).then(res => {
+                toast.success('update State Success', { autoClose: 1500 })
+                setuserProfile(res.userProfile)
+            }).catch(err => {
+                console.error('用户状态更新失败', err);
+            })
         } catch (error) {
         }
     };
-
 
     const handleUpTrend = (stateobj) => {
         try {
-            setFollowedTrendsList(prevList => [stateobj, ...prevList]);
-            const newjsonarr = prevData => [stateobj, ...prevData]
-            updatejsonData(newjsonarr());
+            let obj = {
+                userId: userProfile.user,
+                title: stateobj.title,
+                body: stateobj.body,
+                image: stateobj.image
+            }
+            createArticle(obj).then((res) => {
+                toast.success('up trend success', { autoClose: 1000 })
+            }).catch(err => {
+                toast.error('update error', err)
+            })
         } catch (error) {
         }
     };
 
-
     const handleAddfollow = (addmsg) => {
-        const filteredData = cacheduserData.filter((obj) => obj.username === addmsg.name);
-        if (filteredData.length > 0) {
-            setFollowedList(filteredData.concat(FollowedList));
-            setresgisteraddfollowed(true)
-            toast.success("ADD FOLLOW SUCCESS!");
-        } else {
-            toast.error("Not This User")
-        }
+        addFollower(addmsg.name).then((res) => {
+            toast.success('sucess follow', { autoClose: 1000 })
+            getFollowList()
+        }).catch(err => {
+            toast.error(err.message, { autoClose: 1000 })
+        })
     }
-
-
 
     const handleSearch = (Searchtext) => {
         const filteredData = FollowedTrendsList.filter((obj) => {
@@ -161,8 +134,8 @@ const Indexpage = () => {
                     <h2 className={styles.log}>
                     </h2>
                     <div className={styles.create}>
-                        <p>State:{cachedlogindata && cachedlogindata.company && cachedlogindata.company.catchPhrase}</p>
-                        <p>{cachedlogindata && cachedlogindata.username && cachedlogindata.username}</p>
+                        <p>State:{userProfile.headline}</p>
+                        <p>{userProfile.username}</p>
                         <div className={styles.profilePhoto}>
                             <img src="/image/tx1.jpg" alt="My Image" />
                         </div>

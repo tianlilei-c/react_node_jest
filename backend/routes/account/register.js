@@ -7,6 +7,7 @@ const Profile = require('../../models/profile');
 router.post('/', async (req, res) => {
   try {
     const { name, email, password, username, headline, zipcode, phone, dob, avatar } = req.body;
+    console.log(`name: ${name}, email: ${email}, password: ${password}, username: ${username}, headline: ${headline}, zipcode: ${zipcode}, phone: ${phone}, dob: ${dob}, avatar: ${avatar}`);
     const saltRounds = parseInt(process.env.BCRYPT_HASH);
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = new User({
@@ -16,11 +17,12 @@ router.post('/', async (req, res) => {
     });
     await newUser.save();
     const user = await User.findOne({ email });
+
     const profile = new Profile({
       user: user._id,
       username,
       name,
-      headline,
+      headline: "I'm Happy",
       email,
       zipcode,
       phone,
@@ -30,7 +32,13 @@ router.post('/', async (req, res) => {
     await profile.save();
     res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message});
+    if (error.name === "MongoServerError" && error.code === 11000) {
+      console.error("重复键错误:", error.message);
+      res.status(484).json({ error: "用户名已存在" }); 
+    } else {
+      console.error("其他错误:", error.message);
+      res.status(500).json({ error: "发生了服务器错误" }); 
+    }
   }
 });
 

@@ -3,7 +3,7 @@ import styles from '../main.module.css';
 
 const Followeder = ({ user,onUnfollow }) => {
     const handleUnfollowClick = () => {
-        onUnfollow(user.id);
+        onUnfollow(user.username);
     };
     return (
         <div className={styles.request}>
@@ -14,7 +14,7 @@ const Followeder = ({ user,onUnfollow }) => {
                 <div className={styles["profile-followphoto-msg"]}>
                     <h5>{user.name}</h5>
                     <p className={styles["text-muted"]}>
-                        {user.company.catchPhrase}
+                        {user.headline}
                     </p>
                 </div>
             </div>

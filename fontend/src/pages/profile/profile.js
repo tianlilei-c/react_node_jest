@@ -5,26 +5,47 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useHistory } from 'react-router-dom';
+import { getUserProfile, updateUserProfile } from '../../api'
 
 const Profile = () => {
     const dispatch = useDispatch();
     const history = useHistory();
     const [isFormSwitched, setIsFormSwitched] = useState(false);
 
-    const logindata = useSelector(state => state.logindata);
-    const cachelogindata = useMemo(() => logindata, [logindata]);
-    const updatelogindata = (newData) => {
-        dispatch({ type: 'LOGIN_DATA', payload: newData });
-    };
+    const tokenState = useSelector(state => state.tokenState);
+    useEffect(() => {
+        if (tokenState === false) {
+            history.push('/auth', { message: 'Token expired' });
+        }
+    }, [tokenState, history]);
+
+    const [userProfile, setuserProfile] = useState({
+        avatar: "",
+        dob: "",
+        email: "",
+        headline: "",
+        name: "",
+        phone: "",
+        user: "",
+        username: "",
+        zipcode: null,
+        _id: ""
+    });
 
     useEffect(() => {
-        const userString = localStorage.getItem('user');
-        const user = JSON.parse(userString);
-        if (user) {
-            updatelogindata(user)
-        } else {
-            history.push("/auth");
-        }
+        getUserProfile().then(async (res) => {
+            setuserProfile(res)
+            setFormData({
+                pwd: "",
+                pwdcon: "",
+                email: "",
+                zipcode: '',
+                phone: "",
+                username: res.username
+            })
+        }).catch((err) => {
+            toast.error('Failed to obtain information, please click to log out' + err, { autoClose: 1000 });
+        })
     }, [])
 
     const [formData, setFormData] = useState({
@@ -34,7 +55,26 @@ const Profile = () => {
         zipcode: '',
         phone: "",
     });
-
+    const btnsubmit = async (e) => {
+        e.preventDefault();
+        if (formData.pwd === formData.pwdcon) {
+            await updateUserProfile(formData).then((res) => {
+                toast.success('Success Update',{autoClose:1000})
+                setuserProfile(res.userProfile)
+                if (formData.pwdcon !== '') {
+                    toast.success('Password Success Update,need login agin',{autoClose:1000})
+                    setTimeout(() => {
+                        history.push("/auth");
+                    }, 2000);
+                }
+            }).catch(err => {
+                // toast.error('error update', err);
+            })
+        } else {
+            toast.error("The password confirmation must be the same as the password")
+            return false;
+        }
+    };
 
     const handleInputChange = (e) => {
         setFormData({
@@ -43,69 +83,14 @@ const Profile = () => {
         });
     };
 
-
-    const btnsubmit = (e) => {
-        e.preventDefault(); 
-        if (formData.pwd === formData.pwdcon) {
-            try {
-                let obj = deepClone(cachelogindata)
-                Object.entries(formData).forEach(([key, value]) => {
-                    if (value !== '' && value !== undefined && value !== null) {
-                        if (!obj.hasOwnProperty(key)) {
-                            obj[key] = value;
-                        } else {
-                            obj[key] = value;
-                        }
-                    }
-                });
-                updatelogindata(obj);
-            } catch (error) {
-            }
-
-        } else {
-            toast.error("The password confirmation must be the same as the password")
-            return false;
-        }
-    };
-
-    const deepClone = (obj) => {
-        if (typeof obj !== 'object' || obj === null) {
-            return obj;
-        }
-
-        var clone = Array.isArray(obj) ? [] : {};
-
-        for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                clone[key] = deepClone(obj[key]);
-            }
-        }
-
-        return clone;
-    }
     const cleanformdata = () => {
         setFormData({
-            bday: "",
             pwd: "",
             pwdcon: "",
-            id: null,
-            name: "",
-            username: "",
             email: "",
             zipcode: '',
-            address: {
-                street: "",
-                suite: "",
-                city: "",
-                zipcode: "",
-            },
             phone: "",
-            website: "",
-            company: {
-                name: "",
-                catchPhrase: "",
-                bs: ""
-            }
+            username: formData.username
         });
     };
 
@@ -134,22 +119,24 @@ const Profile = () => {
                         action=""
                         method=""
                         className={stylel.oldform}
-                        id="a-form" 
+                        id="a-form"
                     >
                     </form>
                 </div>
+
+                {/* old msg */}
                 <div className={`${stylel.containercanno}`} id="a-container">
                     <form
                         action=""
                         method=""
                         className={stylel.oldform}
-                        id="a-form" 
+                        id="a-form"
                     >
                         <h4 className={`${stylel.form_title} ${stylel.titlecanno}`}>Curr Info</h4>
                         <input
                             id="accountname"
                             name="accountname"
-                            placeholder={cachelogindata?.username || 'user did not login'}
+                            placeholder={userProfile?.username || 'user did not login'}
                             className={stylel.form_inputcanno}
 
                             onChange={handleInputChange}
@@ -158,7 +145,7 @@ const Profile = () => {
                             id="email"
                             name="email"
                             className={stylel.form_inputcanno}
-                            placeholder={cachelogindata?.email || 'user did not login'}
+                            placeholder={userProfile?.email || 'user did not login'}
                             pattern="\w+@\w+(.\w+){1,4}"
 
                             onChange={handleInputChange}
@@ -169,7 +156,7 @@ const Profile = () => {
                             type="tel"
                             className={stylel.form_inputcanno}
                             pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                            placeholder={cachelogindata?.phone || 'user did not login'}
+                            placeholder={userProfile?.phone || 'user did not login'}
 
                             onChange={handleInputChange}
                         />
@@ -178,17 +165,7 @@ const Profile = () => {
                             name="zip"
                             className={stylel.form_inputcanno}
                             pattern="[0-9]{5}"
-                            placeholder={cachelogindata?.zipcode || cachelogindata?.address?.zipcode || ''}
-
-                            onChange={handleInputChange}
-                        />
-
-                        <input
-                            id="zip"
-                            name="zip"
-                            className={stylel.form_inputcanno}
-                            pattern="[0-9]{5}"
-                            placeholder={cachelogindata?.pwd ? '*'.repeat(cachelogindata.pwd.length) : cachelogindata?.address?.street ? '*'.repeat(cachelogindata.address.street.length) : ''}
+                            placeholder={userProfile?.zipcode || userProfile?.address?.zipcode || ''}
 
                             onChange={handleInputChange}
                         />
