@@ -19,7 +19,21 @@ const articlesSchema = new mongoose.Schema({
   },
   image: {
     type: String
-  }
+  },
+  comments: [{
+    commenterId: {
+      type: String,
+      required: true
+    },
+    commenterName: {
+      type: String,
+      required: true
+    },
+    comment: {
+      type: String,
+      required: true
+    }
+  }]
 });
 
 const Articles = mongoose.model('articles', articlesSchema);

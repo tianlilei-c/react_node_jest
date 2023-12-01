@@ -53,8 +53,6 @@ heroku config
 
 遵循即将在课堂上展示的入门套件。然后根据功能演示来实现功能。然后用你的前端实现 PUT `/avatar` 端点，并验证它是否有效。你还需要实现添加带有文本和图片的文章。你将使用相同的中间件 `uploadImage` 来进行上传。
 
-翻译如下：
-
 ## 第三方认证
 
 按照课堂上的练习，在应用中增加第三方认证选项。你可以选择与哪个第三方进行合作。无论是 Twitter、Facebook、Google 还是任何 OAuth 或 OAuth2 提供商都可以。你应该使用 Request（OAuth）或 PassportJS（OAuth 或 OAuth2）作为认证的中间件。

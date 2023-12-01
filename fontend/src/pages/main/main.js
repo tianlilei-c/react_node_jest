@@ -12,17 +12,16 @@ import "react-toastify/dist/ReactToastify.css";
 import Searchbar from './compoment/SearchBar'
 import { useHistory } from 'react-router-dom';
 import { getUserProfile, updateHeadLine, createArticle, addFollower, getFollowers, getArticleList, removeFollower } from '../../api'
-
 const Indexpage = () => {
+    
     const dispatch = useDispatch();
     const history = useHistory();
-    const [SearchEmpty, setchageSearchEmpty] = useState(false);
     const [FollowedList, setFollowedList] = useState([]);
     const [FollowedTrendsList, setFollowedTrendsList] = useState([]);
+    const [nochangeTrendsList, setnochangeTrendsList] = useState([]);
 
     const tokenState = useSelector(state => state.tokenState);
     useEffect(() => {
-        console.log(tokenState);
         if (tokenState === false) {
             console.log('主页验证', tokenState);
             history.push('/auth', { message: 'Token expired' });
@@ -54,15 +53,23 @@ const Indexpage = () => {
 
     const getFollowList = (() => {
         getFollowers().then(res => {
-            setFollowedList(res)
-            getArticleList().then(res => {
-                console.log('文章列表', res);
-                setFollowedTrendsList(res)
-            }).catch(err => {
-                console.log('获取文章失败');
-            })
+            if (res) {
+                setFollowedList(res)
+            }
+            fetchArticleList()
+        }).catch(err => {
+            console.error(err);
         })
     })
+
+    const fetchArticleList = () => {
+        getArticleList().then(res => {
+            setFollowedTrendsList(res)
+            setnochangeTrendsList(res)
+        }).catch(err => {
+            console.log('获取文章失败');
+        })
+    }
 
     const handleUnfollow = (username) => {
         removeFollower(username).then(res => {
@@ -99,6 +106,7 @@ const Indexpage = () => {
             }
             createArticle(obj).then((res) => {
                 toast.success('up trend success', { autoClose: 1000 })
+                fetchArticleList()
             }).catch(err => {
                 toast.error('update error', err)
             })
@@ -116,14 +124,16 @@ const Indexpage = () => {
     }
 
     const handleSearch = (Searchtext) => {
-        const filteredData = FollowedTrendsList.filter((obj) => {
+        const filteredData = nochangeTrendsList.filter((obj) => {
             const { title, body } = obj;
             return title.includes(Searchtext.msg) || body.includes(Searchtext.msg);
         });
         setFollowedTrendsList(filteredData)
         if (Searchtext.msg === "") {
-            setchageSearchEmpty(!SearchEmpty)
+            fetchArticleList()
         }
+
+
     }
 
     return (
@@ -156,8 +166,8 @@ const Indexpage = () => {
                     </div>
                     <div className={styles.middle}>
                         <Searchbar onSearchinput={handleSearch} />
-                        {FollowedTrendsList.map((user, index) => (
-                            <Trends key={index} user={user} onUnfollow={handleUnfollow} />
+                        {FollowedTrendsList.map((article, index) => (
+                            <Trends key={index} article={article} userProfile={userProfile} updateArticle={fetchArticleList} />
                         ))}
                     </div>
                     <div className={styles.left}>

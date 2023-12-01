@@ -155,8 +155,7 @@ export const getFollowers = async (username) => {
     const response = await api.get(`/followers`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching followers', error);
-    throw error;
+    console.error(error)
   }
 };
 
@@ -166,6 +165,42 @@ export const removeFollower = async (followerUsername) => {
     return response.data;
   } catch (error) {
     console.error('Error removing follower', error);
+    throw error;
+  }
+};
+
+export const updateArticle = async (userData) => {
+  try {
+    const response = await api.put('/articles', userData);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      const customError = new Error(error.response.data.error || "Error updating user profile");
+      customError.status = error.response.status;
+      throw customError;
+    } else {
+      throw error;
+    }
+  }
+};
+
+export const addCommentToArticle = async (articleId, commentData) => {
+  try {
+    const response = await api.post(`/articles/${articleId}/comments`, commentData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding comment', error);
+    throw error;
+  }
+};
+
+
+export const deleteCommentFromArticle = async (articleId, commentId) => {
+  try {
+    const response = await api.delete(`/articles/${articleId}/comments/${commentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting comment', error);
     throw error;
   }
 };
