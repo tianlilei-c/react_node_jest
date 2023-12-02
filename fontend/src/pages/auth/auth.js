@@ -30,11 +30,27 @@ const Login = () => {
     });
 
     useEffect(() => {
-        localStorage.removeItem('authToken')
-        localStorage.removeItem('UserName')
-        dispatch({ type: 'TOKEN_STATE', payload: true });
-        if (location.state && location.state.message) {
-            toast.error(location.state.message, { autoClose: 1500 });
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const username = params.get('username');
+        const msg = params.get('msg');
+        console.log(token, username);
+        if (token && username) {
+            toast.success('Login Success!', { autoClose: 1000 })
+            localStorage.setItem('authToken', token)
+            localStorage.setItem('UserName', username)
+            setTimeout(() => {
+                history.push('/')
+            }, 1000);
+        } else if (msg != undefined && msg) {
+            toast.error(msg, { autoClose: 1000 })
+        } else {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('UserName')
+            dispatch({ type: 'TOKEN_STATE', payload: true });
+            if (location.state && location.state.message) {
+                toast.error(location.state.message, { autoClose: 1500 });
+            }
         }
     }, [])
 
@@ -166,6 +182,13 @@ const Login = () => {
         setIsFormSwitched(!isFormSwitched);
     };
 
+    const loginbygithub = () => {
+        const clientID = '014fb2844b633edb88c7';
+        const redirectURI = 'http://localhost:3000/gitcontrol';
+        const authURL = `https://github.com/login/oauth/authorize?client_id=${clientID}&redirect_uri=${redirectURI}`;
+        window.location.href = authURL;
+    }
+
 
     return (
         <div className={stylel.body}>
@@ -262,6 +285,7 @@ const Login = () => {
                         <button className={`${stylel.form_button} ${stylel.button} ${stylel.submit}`} type="submit">
                             SIGN UP
                         </button>
+
                         <button className={`${stylel.form_button} ${stylel.Cleanbutton} ${stylel.submit}`} type='reset' onClick={cleanformdata}>Clear</button>
                     </form>
                 </div>
@@ -290,6 +314,8 @@ const Login = () => {
                         />
                         <a className={stylel.form_link}>If you forget password please click here.</a>
                         <button className={`${stylel.form_button} ${stylel.button} ${stylel.submit}`} type="submit">SIGN IN!</button>
+                        <button className={`${stylel.form_button} ${stylel.button} ${stylel.submit}`} type="button" onClick={loginbygithub}>login BY GITHUB</button>
+
                     </form>
                 </div>
 

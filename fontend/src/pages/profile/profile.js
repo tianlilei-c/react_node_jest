@@ -5,7 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useHistory } from 'react-router-dom';
-import { getUserProfile, updateUserProfile } from '../../api'
+import { getUserProfile, updateUserProfile, BreakGithubApi } from '../../api'
+import axios from 'axios';
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -29,10 +30,11 @@ const Profile = () => {
         user: "",
         username: "",
         zipcode: null,
-        _id: ""
+        _id: "",
+        userGithubID: null
     });
 
-    useEffect(() => {
+    const getProfileApi = () => {
         getUserProfile().then(async (res) => {
             setuserProfile(res)
             setFormData({
@@ -46,6 +48,10 @@ const Profile = () => {
         }).catch((err) => {
             toast.error('Failed to obtain information, please click to log out' + err, { autoClose: 1000 });
         })
+    }
+
+    useEffect(() => {
+        getProfileApi()
     }, [])
 
     const [formData, setFormData] = useState({
@@ -59,10 +65,10 @@ const Profile = () => {
         e.preventDefault();
         if (formData.pwd === formData.pwdcon) {
             await updateUserProfile(formData).then((res) => {
-                toast.success('Success Update',{autoClose:1000})
+                toast.success('Success Update', { autoClose: 1000 })
                 setuserProfile(res.userProfile)
                 if (formData.pwdcon !== '') {
-                    toast.success('Password Success Update,need login agin',{autoClose:1000})
+                    toast.success('Password Success Update,need login agin', { autoClose: 1000 })
                     setTimeout(() => {
                         history.push("/auth");
                     }, 2000);
@@ -100,6 +106,28 @@ const Profile = () => {
 
     const handleImageUpload = (event) => {
     };
+
+    const togithub = () => {
+        const clientID = '014fb2844b633edb88c7';
+        const redirectURI = 'http://localhost:3000/gitcontrol';
+        const state = encodeURIComponent(userProfile.username); // 编码 username
+        const authURL = `https://github.com/login/oauth/authorize?client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}`;
+        window.location.href = authURL;
+    }
+
+    const breakGithub = async () => {
+        let obj = {
+            username:userProfile.username
+        }
+        await BreakGithubApi(obj).then((res) => {
+            toast.success('break success', { autoClose: 1000 })
+            getProfileApi()
+        }).catch(err => {
+            console.error('err',err);
+        })
+    }
+
+
 
     return (
         <div className={stylel.body}>
@@ -172,6 +200,33 @@ const Profile = () => {
                         <div className={stylel.oldmsgpicturebox}>
                             <img src='/image/tx1.jpg'></img>
                         </div>
+                        {userProfile.userGithubID ? (
+                            <div className={stylel.githubidture_box}>
+                                <label className={stylel.github_Label}>GitHub ID：</label>
+                                <input
+                                    id="userGithubID"
+                                    name="userGithubID"
+                                    className={stylel.github_inputcanno}
+                                    placeholder={userProfile.userGithubID}
+                                    onChange={handleInputChange}
+                                />
+                                <button
+                                    className={`${stylel.form_button} ${stylel.githubbutton} ${stylel.submit}`}
+                                    onClick={breakGithub}
+                                    type="button"
+                                >
+                                    break GitHub
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                className={`${stylel.form_button} ${stylel.githubbutton_connect} ${stylel.submit}`}
+                                onClick={togithub}
+                                type="button"
+                            >
+                                connect to GitHub
+                            </button>
+                        )}
                         <button className={`${stylel.form_button} ${stylel.Cleanbutton} ${stylel.submitcannotuse} ${stylel.submit}`} type='reset' onClick={cleanformdata}>Clean</button>
                     </form>
                 </div>

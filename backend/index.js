@@ -15,10 +15,13 @@ const articlesRoute = require('./routes/articles/articles')
 const testprotectedRoute = require('./routes/test/protected')
 const followerRoute = require('./routes/follower/follower')
 const stubsApi = require('./routes/stubsApi/stubsapi')
+const gitcontrol = require('./routes/account/gitcontrol');
+const deleteGithub = require('./routes/account/cleangithub');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 //test middlewares verifyToken
+app.use('/',  gitcontrol)
 app.use('/protected', verifyToken, testprotectedRoute);
 app.use('/login', loginRoute);
 app.use('/register', registerRoute);
@@ -27,6 +30,8 @@ app.use('/headline', verifyToken, headlineRoute);
 app.use('/articles', verifyToken, articlesRoute);
 app.use('/user', verifyToken, ProfileRoute);
 app.use('/followers', verifyToken, followerRoute);
+app.use('/deleteGithub', verifyToken, deleteGithub);
+
 app.use('/', mockMiddles, stubsApi)
 
 // const password = encodeURIComponent('886xK31111MongoDb');

@@ -159,6 +159,21 @@ export const getFollowers = async (username) => {
   }
 };
 
+export const BreakGithubApi = async (userData) => {
+  try {
+    const response = await api.put('/deleteGithub', userData);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      const customError = new Error(error.response.data.error || "Error updating user profile");
+      customError.status = error.response.status;
+      throw customError;
+    } else {
+      throw error;
+    }
+  }
+};
+
 export const removeFollower = async (followerUsername) => {
   try {
     const response = await api.delete('/followers', { data: { followerUsername } });
