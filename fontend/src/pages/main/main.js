@@ -23,7 +23,6 @@ const Indexpage = () => {
     const tokenState = useSelector(state => state.tokenState);
     useEffect(() => {
         if (tokenState === false) {
-            console.log('主页验证', tokenState);
             history.push('/auth', { message: 'Token expired' });
         }
     }, [tokenState, history]);
@@ -46,8 +45,8 @@ const Indexpage = () => {
             setuserProfile(res)
             getFollowList()
         }).catch((err) => {
-            console.log(err);
-            toast.error('获取信息失败,请点击退出登录' + err, { autoClose: 1000 });
+            console.error(err);
+            toast.error('error please logout' + err, { autoClose: 1000 });
         })
     }, [])
 
@@ -56,15 +55,15 @@ const Indexpage = () => {
             if (res) {
                 setFollowedList(res)
             }
-            fetchArticleList()
+            // fetchArticleList()
         }).catch(err => {
             console.error(err);
         })
     })
     const [page, setPage] = useState(1);
     const fetchArticleList = (page) => {
-        console.log(page);
         getArticleList(page).then(res => {
+            console.log(res);
             setFollowedTrendsList(prevFollowedTrendsList => [...prevFollowedTrendsList, ...res.articles]);
             setnochangeTrendsList(prevNochangeTrendsList => [...prevNochangeTrendsList, ...res.articles]);
         }).catch(err => {
@@ -77,15 +76,17 @@ const Indexpage = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
     const handleScroll = () => {
-        const currentScrollY = window.pageYOffset;
-        if (currentScrollY - prevScrollY.current >= 800) {
+        const currentScrollY = window.pageYOffset
+        console.log(currentScrollY, prevScrollY);
+        if (currentScrollY - prevScrollY.current >= 50) {
+            console.log('page', page);
             setPage(prevPage => {
                 const nextPage = prevPage + 1;
                 fetchArticleList(nextPage);
                 return nextPage;
             });
-            console.log('触发');
             prevScrollY.current = currentScrollY;
         }
     };
@@ -96,7 +97,7 @@ const Indexpage = () => {
             toast.success('unfollow success', { autoClose: 1000 })
             getFollowList()
         }).catch(err => {
-            console.log(err);
+            console.error(err);
         })
     };
 
@@ -111,11 +112,11 @@ const Indexpage = () => {
                 getUserProfile().then((res) => {
                     setuserProfile(res)
                 }).catch((err) => {
-                    console.log(err);
-                    toast.error('获取信息失败,请点击退出登录' + err, { autoClose: 1000 });
+                    console.error(err);
+                    toast.error('error please logout' + err, { autoClose: 1000 });
                 })
             }).catch(err => {
-                console.error('用户状态更新失败', err);
+                console.error('default', err);
             })
         } catch (error) {
         }
@@ -160,10 +161,9 @@ const Indexpage = () => {
 
     const logout = () => {
         logoutApi().then(res => {
-            console.log('res');
             history.push('/auth')
         }).catch(err => {
-            console.log('logouterr', err);
+            console.error('logouterr', err);
         })
     }
 

@@ -34,7 +34,6 @@ const Login = () => {
         const token = params.get('token');
         const username = params.get('username');
         const msg = params.get('msg');
-        console.log(token, username);
         if (token && username) {
             toast.success('Login Success!', { autoClose: 1000 })
             localStorage.setItem('sessionId', token)
@@ -45,9 +44,6 @@ const Login = () => {
         } else if (msg != undefined && msg) {
             toast.error(msg, { autoClose: 1000 })
         } else {
-            
-            localStorage.removeItem('sessionId')
-            localStorage.removeItem('UserName')
             dispatch({ type: 'TOKEN_STATE', payload: true });
             if (location.state && location.state.message) {
                 toast.error(location.state.message, { autoClose: 1500 });
@@ -159,6 +155,9 @@ const Login = () => {
 
     const loginbtnsubmit = async (e) => {
         e.preventDefault();
+        console.log('触发删除信息');
+        localStorage.removeItem('sessionId')
+        localStorage.removeItem('UserName')
         let obj = {
             username: loginformData.loginaccountname,
             password: loginformData.loginpwd
@@ -168,6 +167,7 @@ const Login = () => {
             localStorage.setItem('sessionId', res.sessionKey)
             localStorage.setItem('UserName', obj.username)
             setTimeout(() => {
+                console.log('跳转前触发', localStorage.getItem('sessionId'));
                 history.push('/')
             }, 1000);
         }).catch((err) => {

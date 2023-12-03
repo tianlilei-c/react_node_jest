@@ -108,7 +108,7 @@ const Profile = () => {
     const togithub = () => {
         const clientID = '014fb2844b633edb88c7';
         const redirectURI = 'http://localhost:3000/gitcontrol';
-        const state = encodeURIComponent(userProfile.username); // 编码 username
+        const state = encodeURIComponent(userProfile.username); 
         const authURL = `https://github.com/login/oauth/authorize?client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}`;
         window.location.href = authURL;
     }
@@ -126,11 +126,9 @@ const Profile = () => {
     }
 
     const successCallBack = async (e) => {
-        console.log(e);
         updateavatar({ avatar: e.info.url }).then(res => {
-            console.log('res', res);
             setuserProfile(res.userProfile)
-            toast.success('图像更新成功', { autoClose: 1000 })
+            toast.success('update success', { autoClose: 1000 })
         }).catch(err => {
             console.error('update avatar error', err);
         })
@@ -138,7 +136,7 @@ const Profile = () => {
 
 
     const failureCallBack = async (e) => {
-        console.log('file to cloudinary error', e);
+        console.error('file to cloudinary error', e);
     }
 
 

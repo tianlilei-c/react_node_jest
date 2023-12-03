@@ -9,8 +9,10 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('sessionId');
+  console.log('token 拿到了吗',token);
   if (token) {
     config.headers.Authorization = `${token}`;
+    console.log('config',config.headers.Authorization);
   }
   return config;
 });
@@ -132,7 +134,7 @@ export const updateHeadLine = async (userData) => {
 
 export const addFollower = async (followerUsername) => {
   try {
-    const response = await api.post('/followers', { followerUsername });
+    const response = await api.post('/following/user', { followerUsername });
     return response.data;
   } catch (error) {
 
@@ -152,7 +154,7 @@ export const addFollower = async (followerUsername) => {
 
 export const getFollowers = async (username) => {
   try {
-    const response = await api.get(`/followers`);
+    const response = await api.get(`/following/user`);
     return response.data;
   } catch (error) {
     console.error(error)
@@ -176,7 +178,7 @@ export const BreakGithubApi = async (userData) => {
 
 export const removeFollower = async (followerUsername) => {
   try {
-    const response = await api.delete('/followers', { data: { followerUsername } });
+    const response = await api.delete('/following/user', { data: { followerUsername } });
     return response.data;
   } catch (error) {
     console.error('Error removing follower', error);

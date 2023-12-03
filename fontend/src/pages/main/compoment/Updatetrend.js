@@ -40,7 +40,6 @@ const updatestate = (props) => {
   };
 
   const successCallBack = async (e) => {
-    console.log(e);
     setPost(prevPost => ({
       ...prevPost,
       image: e.info.url
@@ -49,7 +48,7 @@ const updatestate = (props) => {
     // updateavatar({ avatar: e.info.url }).then(res => {
     //   console.log('res', res);
     //   setuserProfile(res.userProfile)
-    //   toast.success('图像更新成功', { autoClose: 1000 })
+    //   toast.success('', { autoClose: 1000 })
     // }).catch(err => {
     //   console.error('update avatar error', err);
     // })
@@ -57,7 +56,7 @@ const updatestate = (props) => {
 
 
   const failureCallBack = async (e) => {
-    console.log('file to cloudinary error', e);
+    // console.log('file to cloudinary error', e);
   }
 
 
