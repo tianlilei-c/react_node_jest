@@ -80,12 +80,16 @@ const Indexpage = () => {
     const handleScroll = () => {
         const currentScrollY = window.pageYOffset;
         if (currentScrollY - prevScrollY.current >= 800) {
-            setPage(page => page + 1)
+            setPage(prevPage => {
+                const nextPage = prevPage + 1;
+                fetchArticleList(nextPage);
+                return nextPage;
+            });
             console.log('触发');
-            fetchArticleList(page);
             prevScrollY.current = currentScrollY;
         }
     };
+
 
     const handleUnfollow = (username) => {
         removeFollower(username).then(res => {
