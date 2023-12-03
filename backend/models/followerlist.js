@@ -6,7 +6,7 @@ const followerSchema = new mongoose.Schema({
         required: true
     },
     followers: [{
-        type: String,//也是username，不过是被关注者的
+        type: String,
         required: true 
     }]
 });

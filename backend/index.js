@@ -14,7 +14,7 @@ const headlineRoute = require('./routes/user/headline');
 const articlesRoute = require('./routes/articles/articles')
 const testprotectedRoute = require('./routes/test/protected')
 const followerRoute = require('./routes/follower/follower')
-const stubsApi = require('./routes/stubsApi/stubsapi')
+const specilApi = require('./routes/specil/specilApi')
 const gitcontrol = require('./routes/account/gitcontrol');
 const deleteGithub = require('./routes/account/cleangithub');
 const avatarRoute = require('./routes/avatar/avatar')
@@ -38,35 +38,38 @@ app.use('/logout', verifyToken, logoutRoute);
 app.use('/headline', verifyToken, headlineRoute);
 app.use('/articles', verifyToken, articlesRoute);
 app.use('/user', verifyToken, ProfileRoute);
-app.use('/followers', verifyToken, followerRoute);
+app.use('/following/user', verifyToken, followerRoute);
 app.use('/avatar', verifyToken, avatarRoute);
 
 app.use('/deleteGithub', verifyToken, deleteGithub);
 
-app.use('/', mockMiddles, stubsApi)
+app.use('/', verifyToken, specilApi)
 
 // const password = encodeURIComponent('886xK31111MongoDb');
 // const connectionString = `mongodb+srv://xk614283:${password}@expressmongodb.yewyjq9.mongodb.net/?retryWrites=true&w=majority`;
 
-// mongoose.connect(connectionString)
-//   .then(() => {
-//     console.log('MongoDB connected');
-//   })
-//   .catch((error) => {
-//     console.error('MongoDB connection error:', error);
-//   });
+const password = encodeURIComponent('09110414Jrq');
+const connectionString = `mongodb+srv://rj50:${password}@cluster0.dfsk22j.mongodb.net/?retryWrites=true&w=majority`;
 
-
-mongoose.connect('mongodb://localhost/node6', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(connectionString)
   .then(() => {
     console.log('MongoDB connected');
   })
   .catch((error) => {
     console.error('MongoDB connection error:', error);
   });
+
+
+// mongoose.connect('mongodb://localhost/node6', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true
+// })
+// .then(() => {
+//   console.log('MongoDB connected');
+// })
+// .catch((error) => {
+//   console.error('MongoDB connection error:', error);
+// });
 
 
 const PORT = process.env.PORT || 3000;

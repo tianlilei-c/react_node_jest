@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     await article.save();
     res.status(201).json({ message: 'Article created successfully' });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'An error occurred while creating the article' });
   }
 });
@@ -49,16 +49,16 @@ router.put('/', async (req, res) => {
     await article.save();
     res.status(200).json({ message: 'Article updated successfully' });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'An error occurred while updating the article' });
   }
 });
 
 router.get('/', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // 当前页码，默认为第一页
-    const pageSize = parseInt(req.query.pageSize) || 3; // 每页显示的文章数量，默认为10
-    console.log('page',req.query.page);
+    const page = parseInt(req.query.page) || 1; //
+    const pageSize = parseInt(req.query.pageSize) || 3; // 
+    // console.log('page',req.query.page);
     let userIds = [];
     userIds.push(req.user._id);
     const followers = await Followers.findOne({ username: req.user.username });
@@ -66,13 +66,13 @@ router.get('/', async (req, res) => {
       const followerUsers = await User.find({ username: { $in: followers.followers } });
       userIds = userIds.concat(followerUsers.map(user => user._id));
     }
-    const totalArticlesCount = await Articles.countDocuments({ userId: { $in: userIds } }); // 获取总文章数量
+    const totalArticlesCount = await Articles.countDocuments({ userId: { $in: userIds } }); 
     const totalPages = Math.ceil(totalArticlesCount / pageSize); // 计算总页数
 
     const articles = await Articles.find({ userId: { $in: userIds } })
       .sort({ createdAt: -1 })
-      .skip((page - 1) * pageSize) // 跳过前面的文章数量
-      .limit(pageSize); // 限制返回的文章数量
+      .skip((page - 1) * pageSize) 
+      .limit(pageSize); 
 
     res.status(200).json({
       articles,
@@ -81,7 +81,7 @@ router.get('/', async (req, res) => {
       pageSize
     });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'An error occurred while retrieving articles' });
   }
 });
@@ -105,7 +105,7 @@ router.post('/:articleId/comments', async (req, res) => {
     await article.save();
     res.status(201).json({ message: 'Comment added successfully', comment: newComment });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'An error occurred while adding a comment' });
   }
 });
@@ -136,7 +136,7 @@ router.delete('/:articleId/comments/:commentId', async (req, res) => {
 
     res.status(200).json({ message: 'Comment deleted successfully' });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'An error occurred while deleting the comment' });
   }
 });

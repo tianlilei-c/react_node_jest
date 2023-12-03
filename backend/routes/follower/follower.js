@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
         let username = req.user.username;
         const followersRecord = await Followers.findOne({ username });
         if (!followersRecord) {
-            return res.status(404).json({ error: 'Followers not found' });
+            return res.status(403).json({ error: 'Followers not found' });
         }
         const profiles = await Promise.all(
             followersRecord.followers.map(async (followerUsername) => {
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
         const validProfiles = profiles.filter(profile => profile !== null);
         res.status(200).json(validProfiles);
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).json({ error: 'An error occurred while retrieving follower profiles' });
     }
 });
@@ -68,7 +68,7 @@ router.delete('/', async (req, res) => {
 
         res.status(200).json({ message: 'Follower removed successfully' });
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).json({ error: 'An error occurred while removing a follower' });
     }
 });

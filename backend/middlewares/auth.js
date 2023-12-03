@@ -3,6 +3,7 @@ const User = require('../models/user');
 
 const verifyToken = async (req, res, next) => {
   const token = req.header('Authorization');
+  console.log('midware token',token);
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
