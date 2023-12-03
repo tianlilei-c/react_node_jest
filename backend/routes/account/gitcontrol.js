@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Profile = require('../../models/profile');
 const User = require('../../models/user');
-const jwt = require('jsonwebtoken');
+const md5 = require('md5')
 const axios = require('axios');
 
 router.get('/gitcontrol', async (req, res) => {
@@ -15,10 +15,9 @@ router.get('/gitcontrol', async (req, res) => {
         if (username && username !== 'undefined') {
             let userprofile = await Profile.findOne({ username });
             if (!userprofile) {
-                return res.redirect(`http://localhost:5000/error?msg=${encodeURIComponent('Invalid username')}`);
+                return res.redirect(`http://localhost:5000/auth?msg=${encodeURIComponent('Invalid username')}`);
             }
 
-            // 处理 GitHub 登录和更新 userprofile
             const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
                 client_id: clientID,
                 client_secret: clientSecret,
@@ -61,7 +60,7 @@ router.get('/gitcontrol', async (req, res) => {
             }
 
             let user = await User.findOne({ username: userprofile.username });
-            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const token = md5(process.env.JWT_SECRET + new Date().getTime() + user.username);
 
             user.token = token;
             await user.save();
@@ -70,7 +69,7 @@ router.get('/gitcontrol', async (req, res) => {
             return res.redirect(redirectUrl);
         }
     } catch (error) {
-        return res.redirect(`http://localhost:5000/error?msg=${encodeURIComponent(error.message)}`);
+        return res.redirect(`http://localhost:5000/auth?msg=${encodeURIComponent(error.message)}`);
     }
 });
 

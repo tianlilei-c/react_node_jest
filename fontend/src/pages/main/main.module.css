@@ -49,12 +49,25 @@ body {
   margin: 0 auto;
 }
 
+.profile-label {
+  width: 80%;
+  border-radius: 50%;
+  /* overflow: hidden; */
+  display: flex;
+  align-items: center;
+}
+
 .profile-photo {
   width: 2.7rem;
   aspect-ratio: 1/1;
   border-radius: 50%;
-  overflow: hidden;
+  /* overflow: hidden; */
   display: flex;
+  align-items: center;
+}
+
+.profile-photo p {
+  margin-left: 8px;
 }
 
 .image-button {

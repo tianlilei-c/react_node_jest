@@ -6,13 +6,13 @@ const Followers = require('../../models/followerlist');
 
 router.post('/', async (req, res) => {
   try {
-    const { userId, title, body, image } = req.body;
-    const user = await User.findOne({ _id: userId });
+    const { title, body, image } = req.body;
+    const user = await User.findOne({ _id: req.user._id });
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
     const article = new Articles({
-      userId,
+      userId: user._id,
       title,
       body,
       image
@@ -54,9 +54,11 @@ router.put('/', async (req, res) => {
   }
 });
 
-
 router.get('/', async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // 当前页码，默认为第一页
+    const pageSize = parseInt(req.query.pageSize) || 3; // 每页显示的文章数量，默认为10
+    console.log('page',req.query.page);
     let userIds = [];
     userIds.push(req.user._id);
     const followers = await Followers.findOne({ username: req.user.username });
@@ -64,9 +66,20 @@ router.get('/', async (req, res) => {
       const followerUsers = await User.find({ username: { $in: followers.followers } });
       userIds = userIds.concat(followerUsers.map(user => user._id));
     }
-    const articles = await Articles.find({ userId: { $in: userIds } });
-    res.status(200).json(articles);
+    const totalArticlesCount = await Articles.countDocuments({ userId: { $in: userIds } }); // 获取总文章数量
+    const totalPages = Math.ceil(totalArticlesCount / pageSize); // 计算总页数
 
+    const articles = await Articles.find({ userId: { $in: userIds } })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * pageSize) // 跳过前面的文章数量
+      .limit(pageSize); // 限制返回的文章数量
+
+    res.status(200).json({
+      articles,
+      totalPages,
+      currentPage: page,
+      pageSize
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while retrieving articles' });

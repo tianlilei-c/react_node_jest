@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from "./main.module.css"
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -11,9 +11,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Searchbar from './compoment/SearchBar'
 import { useHistory } from 'react-router-dom';
-import { getUserProfile, updateHeadLine, createArticle, addFollower, getFollowers, getArticleList, removeFollower } from '../../api'
+import { getUserProfile, updateHeadLine, createArticle, addFollower, getFollowers, getArticleList, removeFollower, logoutApi } from '../../api'
 const Indexpage = () => {
-    
+
     const dispatch = useDispatch();
     const history = useHistory();
     const [FollowedList, setFollowedList] = useState([]);
@@ -61,15 +61,31 @@ const Indexpage = () => {
             console.error(err);
         })
     })
-
-    const fetchArticleList = () => {
-        getArticleList().then(res => {
-            setFollowedTrendsList(res)
-            setnochangeTrendsList(res)
+    const [page, setPage] = useState(1);
+    const fetchArticleList = (page) => {
+        console.log(page);
+        getArticleList(page).then(res => {
+            setFollowedTrendsList(prevFollowedTrendsList => [...prevFollowedTrendsList, ...res.articles]);
+            setnochangeTrendsList(prevNochangeTrendsList => [...prevNochangeTrendsList, ...res.articles]);
         }).catch(err => {
-            console.log('获取文章失败');
         })
     }
+
+    const prevScrollY = useRef(0);
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+    const handleScroll = () => {
+        const currentScrollY = window.pageYOffset;
+        if (currentScrollY - prevScrollY.current >= 800) {
+            setPage(page => page + 1)
+            console.log('触发');
+            fetchArticleList(page);
+            prevScrollY.current = currentScrollY;
+        }
+    };
 
     const handleUnfollow = (username) => {
         removeFollower(username).then(res => {
@@ -88,7 +104,12 @@ const Indexpage = () => {
             }
             updateHeadLine(obj).then(res => {
                 toast.success('update State Success', { autoClose: 1500 })
-                setuserProfile(res.userProfile)
+                getUserProfile().then((res) => {
+                    setuserProfile(res)
+                }).catch((err) => {
+                    console.log(err);
+                    toast.error('获取信息失败,请点击退出登录' + err, { autoClose: 1000 });
+                })
             }).catch(err => {
                 console.error('用户状态更新失败', err);
             })
@@ -99,7 +120,6 @@ const Indexpage = () => {
     const handleUpTrend = (stateobj) => {
         try {
             let obj = {
-                userId: userProfile.user,
                 title: stateobj.title,
                 body: stateobj.body,
                 image: stateobj.image
@@ -132,9 +152,19 @@ const Indexpage = () => {
         if (Searchtext.msg === "") {
             fetchArticleList()
         }
-
-
     }
+
+    const logout = () => {
+        logoutApi().then(res => {
+            console.log('res');
+            history.push('/auth')
+        }).catch(err => {
+            console.log('logouterr', err);
+        })
+    }
+
+
+
 
     return (
         <>
@@ -147,10 +177,10 @@ const Indexpage = () => {
                         <p>State:{userProfile.headline}</p>
                         <p>{userProfile.username}</p>
                         <div className={styles.profilePhoto}>
-                            <img src="/image/tx1.jpg" alt="My Image" />
+                            <img src={userProfile.avatar} alt="My Image" />
                         </div>
                         <Link to="/profile" className={`${styles.btn} ${styles['btn-primaryup']}`} htmlFor="create-post">Profile</Link>
-                        <Link to="/auth" className={`${styles['btn-primaryout']}`} htmlFor="create-post">logout</Link>
+                        <button className={`${styles['btn-primaryout']}`} onClick={logout} htmlFor="create-post">logout</button>
                     </div>
                 </div>
             </nav>
@@ -171,8 +201,8 @@ const Indexpage = () => {
                         ))}
                     </div>
                     <div className={styles.left}>
-                        <Updatestate handleupstate={handleUpstate} />
-                        <Updatetrend handleuptrend={handleUpTrend} />
+                        <Updatestate handleupstate={handleUpstate} useravatar={userProfile} />
+                        <Updatetrend handleuptrend={handleUpTrend} useravatar={userProfile} />
                         <Addfollow handleaddfollow={handleAddfollow} />
                     </div>
                 </div>

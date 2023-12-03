@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from '../main.module.css';
 
-const updatestate = ({ handleupstate}) => {
+const updatestate = (props) => {
     const [post, setPost] = useState({
         text: '',
         image: null
@@ -25,13 +25,13 @@ const updatestate = ({ handleupstate}) => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        handleupstate(post)
+        props.handleupstate(post)
     };
     return (
         <div className={styles.sidebar}>
             <form onSubmit={handleSubmit} className={styles['create-post']}>
                 <div className={styles['profile-photo']}>
-                    <img src="/image/tx1.jpg" alt="Profile Photo" />
+                    <img src={props.useravatar.avatar} alt="Profile Photo" /> <p>{props.useravatar.username} </p>
                 </div>
                 <input
                     id="create-post"

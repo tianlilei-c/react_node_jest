@@ -9,7 +9,7 @@ const Followeder = ({ user,onUnfollow }) => {
         <div className={styles.request}>
             <div className={styles.info}>
                 <div className={styles["profile-followphoto"]}>
-                    <img className={styles["profile-followphoto-img"]}  src="/image/2.jpg" alt="Profile Photo" />
+                    <img className={styles["profile-followphoto-img"]}  src={user.avatar} alt="Profile Photo" />
                 </div>
                 <div className={styles["profile-followphoto-msg"]}>
                     <h5>{user.name}</h5>

@@ -5,12 +5,22 @@ const Profile = require('../../models/profile')
 router.get('/:username', async (req, res) => {
   try {
     const username = req.params.username;
-    const userProfile = await Profile.findOne({ username })
-    if (userProfile) {
-      res.send(`Username Headline: ${userProfile.headline}`);
+    if (username != undefined && username) {
+      const userProfile = await Profile.findOne({ username })
+      if (userProfile) {
+        res.send(`Username Headline: ${userProfile.headline}`);
+      } else {
+        res.status(500).json({ error: 'user is not find' });
+      }
     } else {
-      res.status(500).json({ error: 'user is not find' });
+      const userProfile = await Profile.findOne({ user: req.user._id })
+      if (userProfile) {
+        res.send(`Username Headline: ${userProfile.headline}`);
+      } else {
+        res.status(500).json({ error: 'user is not find' });
+      }
     }
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -24,7 +34,7 @@ router.put('/', async (req, res) => {
     if (userProfile) {
       userProfile.headline = headline
       await userProfile.save()
-    res.status(200).json({ message: 'update successful', userProfile  });
+      res.status(200).json({ message: 'update successful', headline });
     } else {
       res.status(500).json({ msg: "error user" });
     }

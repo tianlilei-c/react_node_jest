@@ -7,8 +7,6 @@ const Trends = (props) => {
     let article = props.article
     let userProfile = props.userProfile
     const Addcomment = () => {
-        console.log('article', article);
-        console.log('userProfile', userProfile);
         const Comment = prompt('please enter your Comment');
         let obj = {
             commenterId: userProfile.user,
@@ -51,7 +49,7 @@ const Trends = (props) => {
                 <div className={styles.head}>
                     <div className={styles.article}>
                         <div className={styles['trendphoto']}>
-                            <img src="/image/tx1.jpg" />
+                            <img src={userProfile.avatar} />
                         </div>
                         <div className={styles.info}>
                             <h3>{article.title}</h3>
@@ -59,15 +57,10 @@ const Trends = (props) => {
                         </div>
                     </div>
                 </div>
+                <div className={styles.photo}>
+                    {article.image ? <img src={article.image} alt="Post Photo" /> : null}
+                </div>
 
-                {article.isTextOnly !== true && (
-                    <div className={styles.photo}>
-                        <img src="/image/1.jpg" alt="Post Photo" />
-                    </div>
-                )}
-                {article.isTextOnly && (
-                    <div className={styles.body}>{article.body}</div>
-                )}
 
                 <div className={styles['action-buttons']}>
                     <div className={styles['interaction-buttons']}>

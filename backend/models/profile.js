@@ -10,7 +10,7 @@ const profileSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   dob: { type: Date, required: true },
   userGithubID: { type: String, unique: true },
-  avatar: { type: String, default: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/DtLebron.jpg/220px-DtLebron.jpg' }
+  avatar: { type: String, default: '' }
 });
 
 const Profile = mongoose.model('profiles', profileSchema);

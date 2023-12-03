@@ -5,8 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useHistory } from 'react-router-dom';
-import { getUserProfile, updateUserProfile, BreakGithubApi } from '../../api'
-import axios from 'axios';
+import { getUserProfile, updateUserProfile, BreakGithubApi, updateavatar } from '../../api'
+import { WidgetLoader, Widget } from 'react-cloudinary-upload-widget'
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -104,8 +104,6 @@ const Profile = () => {
         history.push("/");
     }
 
-    const handleImageUpload = (event) => {
-    };
 
     const togithub = () => {
         const clientID = '014fb2844b633edb88c7';
@@ -117,28 +115,88 @@ const Profile = () => {
 
     const breakGithub = async () => {
         let obj = {
-            username:userProfile.username
+            username: userProfile.username
         }
         await BreakGithubApi(obj).then((res) => {
             toast.success('break success', { autoClose: 1000 })
             getProfileApi()
         }).catch(err => {
-            console.error('err',err);
+            console.error('err', err);
         })
     }
 
+    const successCallBack = async (e) => {
+        console.log(e);
+        updateavatar({ avatar: e.info.url }).then(res => {
+            console.log('res', res);
+            setuserProfile(res.userProfile)
+            toast.success('图像更新成功', { autoClose: 1000 })
+        }).catch(err => {
+            console.error('update avatar error', err);
+        })
+    }
+
+
+    const failureCallBack = async (e) => {
+        console.log('file to cloudinary error', e);
+    }
 
 
     return (
         <div className={stylel.body}>
             <ToastContainer />
+            <WidgetLoader />
             <div className={stylel.shelllogo}>
                 <button onClick={tohome} className={`${stylel.form_button} ${stylel.homebutton} ${stylel.submit} `}  >
                     Back To MAIN
                 </button>
-
-                <label htmlFor="file" className={stylel.inputimglabel} >Update Profile Picture</label>
-                <input type="file" name='file' id='file' accept="image/*" onChange={handleImageUpload} className={stylel.inputimg} ></input>
+                <Widget
+                    sources={['local', 'camera', 'dropbox']}
+                    resourceType={'image'}
+                    cloudName={'dlym7dlsp'}
+                    uploadPreset={'hw7web'}
+                    buttonText={'update avatar'}
+                    folder={'hw7'}
+                    cropping={false}
+                    multiple={false}
+                    autoClose={true}
+                    onSuccess={successCallBack}
+                    onFailure={failureCallBack}
+                    logging={false}
+                    customPublicId={'sample'}
+                    eager={'w_400,h_300,c_pad|w_260,h_200,c_crop'}
+                    use_filename={false}
+                    destroy={false}
+                    widgetStyles={{
+                        palette: {
+                            window: '#737373',
+                            windowBorder: '#FFFFFF',
+                            tabIcon: '#FF9600',
+                            menuIcons: '#D7D7D8',
+                            textDark: '#DEDEDE',
+                            textLight: '#FFFFFF',
+                            link: '#0078FF',
+                            action: '#FF620C',
+                            inactiveTabIcon: '#B3B3B3',
+                            error: '#F44235',
+                            inProgress: '#0078FF',
+                            complete: '#20B832',
+                            sourceBg: '#909090'
+                        },
+                        fonts: {
+                            default: null,
+                        }
+                    }}
+                    style={{
+                        color: 'white',
+                        border: 'none',
+                        width: '160px',
+                        backgroundColor: 'green',
+                        borderRadius: '4px',
+                        height: '25px',
+                        marginTop: '8px'
+                    }}
+                />
             </div>
             <div className={stylel.shell}>
                 {/* register form */}
@@ -151,7 +209,6 @@ const Profile = () => {
                     >
                     </form>
                 </div>
-
                 {/* old msg */}
                 <div className={`${stylel.containercanno}`} id="a-container">
                     <form
@@ -198,7 +255,7 @@ const Profile = () => {
                             onChange={handleInputChange}
                         />
                         <div className={stylel.oldmsgpicturebox}>
-                            <img src='/image/tx1.jpg'></img>
+                            <img src={userProfile.avatar} alt='user avatar'></img>
                         </div>
                         {userProfile.userGithubID ? (
                             <div className={stylel.githubidture_box}>

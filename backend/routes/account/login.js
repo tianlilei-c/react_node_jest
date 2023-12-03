@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const md5 = require('md5')
 const User = require('../../models/user');
 
+const cookieKey = 'sid';
 router.post('/', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -15,10 +16,11 @@ router.post('/', async (req, res) => {
     if (!passwordMatch) {
       return res.status(400).json({ error: 'Invalid username or password' });
     }
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    user.token = token; 
-    await user.save(); 
-    res.status(200).json({ message: 'Login successful', token });
+    const sessionKey = md5(process.env.JWT_SECRET + new Date().getTime() + user.username);
+    user.token = sessionKey;
+    await user.save();
+    res.cookie(cookieKey, sessionKey, { maxAge: 3600 * 1000, httpOnly: true, sameSite: 'None', secure: true });
+    res.status(200).json({ sessionKey });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

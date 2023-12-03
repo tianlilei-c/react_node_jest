@@ -5,18 +5,12 @@ const User = require('../../models/user');
 
 router.put('/', async (req, res) => {
   try {
-    const token = req.header('Authorization');
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-    const user = await User.findById(userId);
+    const user = await User.findById({ _id: req.user._id });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    user.token = ''; 
+    user.token = '';
     await user.save();
 
     res.status(200).json({ message: 'Logout successful' });

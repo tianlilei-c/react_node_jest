@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('sessionId');
   if (token) {
     config.headers.Authorization = `${token}`;
   }
@@ -61,9 +61,9 @@ export const createArticle = async (articleData) => {
   }
 };
 
-export const getArticleList = async () => {
+export const getArticleList = async (e) => {
   try {
-    const response = await api.get(`/articles`);
+    const response = await api.get(`/articles/?page=${e}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -209,10 +209,35 @@ export const addCommentToArticle = async (articleId, commentData) => {
   }
 };
 
+export const updateavatar = async (imgurl) => {
+  try {
+    const response = await api.put('/avatar', imgurl);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      const customError = new Error(error.response.data.error || "Error updating user profile");
+      customError.status = error.response.status;
+      throw customError;
+    } else {
+      throw error;
+    }
+  }
+};
+
 
 export const deleteCommentFromArticle = async (articleId, commentId) => {
   try {
     const response = await api.delete(`/articles/${articleId}/comments/${commentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting comment', error);
+    throw error;
+  }
+};
+
+export const logoutApi = async () => {
+  try {
+    const response = await api.put(`/logout`);
     return response.data;
   } catch (error) {
     console.error('Error deleting comment', error);

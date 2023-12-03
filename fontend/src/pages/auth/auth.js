@@ -37,7 +37,7 @@ const Login = () => {
         console.log(token, username);
         if (token && username) {
             toast.success('Login Success!', { autoClose: 1000 })
-            localStorage.setItem('authToken', token)
+            localStorage.setItem('sessionId', token)
             localStorage.setItem('UserName', username)
             setTimeout(() => {
                 history.push('/')
@@ -45,7 +45,8 @@ const Login = () => {
         } else if (msg != undefined && msg) {
             toast.error(msg, { autoClose: 1000 })
         } else {
-            localStorage.removeItem('authToken')
+            
+            localStorage.removeItem('sessionId')
             localStorage.removeItem('UserName')
             dispatch({ type: 'TOKEN_STATE', payload: true });
             if (location.state && location.state.message) {
@@ -164,7 +165,7 @@ const Login = () => {
         }
         await LoginApi(obj).then((res) => {
             toast.success('Login Success!', { autoClose: 1000 })
-            localStorage.setItem('authToken', res.token)
+            localStorage.setItem('sessionId', res.sessionKey)
             localStorage.setItem('UserName', obj.username)
             setTimeout(() => {
                 history.push('/')
